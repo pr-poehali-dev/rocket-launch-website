@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import RocketAnimation from "@/components/RocketAnimation";
 import MissionHeader from "@/components/mission/MissionHeader";
@@ -10,8 +9,10 @@ const Index = () => {
   // Состояние миссии
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [isLaunched, setIsLaunched] = useState(false);
-  const [missionPhase, setMissionPhase] = useState<'pre-launch' | 'launch' | 'orbit' | 'moon-approach' | 'landing'>('pre-launch');
-  
+  const [missionPhase, setMissionPhase] = useState<
+    "pre-launch" | "launch" | "orbit" | "moon-approach" | "landing"
+  >("pre-launch");
+
   // Параметры полета
   const [thrust, setThrust] = useState(85);
   const [angle, setAngle] = useState(90);
@@ -19,7 +20,7 @@ const Index = () => {
   const [oxygen, setOxygen] = useState(100);
   const [altitude, setAltitude] = useState(0);
   const [velocity, setVelocity] = useState(0);
-  
+
   // Системы корабля
   const [systemsState, setSystemsState] = useState({
     navigation: true,
@@ -37,8 +38,8 @@ const Index = () => {
   const handleCountdownComplete = () => {
     setIsCountingDown(false);
     setIsLaunched(true);
-    setMissionPhase('launch');
-    
+    setMissionPhase("launch");
+
     // Симуляция изменения параметров полета
     startFlightSimulation();
   };
@@ -46,7 +47,7 @@ const Index = () => {
   const resetLaunch = () => {
     setIsLaunched(false);
     setIsCountingDown(false);
-    setMissionPhase('pre-launch');
+    setMissionPhase("pre-launch");
     setFuel(100);
     setOxygen(100);
     setAltitude(0);
@@ -56,47 +57,46 @@ const Index = () => {
   };
 
   const toggleSystem = (system: keyof typeof systemsState) => {
-    setSystemsState(prev => ({
+    setSystemsState((prev) => ({
       ...prev,
-      [system]: !prev[system]
+      [system]: !prev[system],
     }));
   };
 
   // Симуляция полета
   const startFlightSimulation = () => {
     const flightInterval = setInterval(() => {
-      setFuel(prev => {
-        const newFuel = Math.max(0, prev - (thrust / 100));
+      setFuel((prev) => {
+        const newFuel = Math.max(0, prev - thrust / 100);
         if (newFuel <= 0) {
           clearInterval(flightInterval);
         }
         return newFuel;
       });
-      
-      setOxygen(prev => Math.max(0, prev - 0.05));
-      
-      setAltitude(prev => prev + (velocity / 10));
-      
-      setVelocity(prev => {
+
+      setOxygen((prev) => Math.max(0, prev - 0.05));
+
+      setAltitude((prev) => prev + velocity / 10);
+
+      setVelocity((prev) => {
         if (fuel > 0 && systemsState.engineMain) {
-          return Math.min(28000, prev + (thrust / 50));
+          return Math.min(28000, prev + thrust / 50);
         } else {
           return Math.max(0, prev - 10);
         }
       });
-      
+
       // Обновление фазы миссии в зависимости от высоты
-      setMissionPhase(currentPhase => {
-        if (altitude > 500 && currentPhase === 'orbit') {
-          return 'moon-approach';
-        } else if (altitude > 200 && currentPhase === 'launch') {
-          return 'orbit';
+      setMissionPhase((currentPhase) => {
+        if (altitude > 500 && currentPhase === "orbit") {
+          return "moon-approach";
+        } else if (altitude > 200 && currentPhase === "launch") {
+          return "orbit";
         }
         return currentPhase;
       });
-      
     }, 500);
-    
+
     return () => clearInterval(flightInterval);
   };
 
@@ -108,7 +108,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Панель управления миссией */}
-          <MissionControls 
+          <MissionControls
             thrust={thrust}
             setThrust={setThrust}
             angle={angle}
@@ -124,21 +124,21 @@ const Index = () => {
             resetLaunch={resetLaunch}
             handleCountdownComplete={handleCountdownComplete}
           />
-          
+
           {/* Центральная визуализация полета */}
           <div className="lg:col-span-2 flex flex-col">
             {/* Статусная строка полета */}
-            <FlightStatusBar 
-              altitude={altitude} 
-              velocity={velocity} 
-              missionPhase={missionPhase} 
+            <FlightStatusBar
+              altitude={altitude}
+              velocity={velocity}
+              missionPhase={missionPhase}
             />
-            
+
             {/* Анимация ракеты */}
             <div className="flex-1 bg-black/40 rounded-lg border border-slate-800 p-4 flex items-center justify-center">
-              <RocketAnimation isLaunched={isLaunched} />
+              <RocketAnimation isLaunched={isLaunched} altitude={altitude} />
             </div>
-            
+
             {/* Визуализация траектории полета */}
             <FlightTrajectory missionPhase={missionPhase} />
           </div>

@@ -3,11 +3,17 @@ import { cn } from "@/lib/utils";
 
 interface RocketAnimationProps {
   isLaunched: boolean;
+  altitude: number;
   className?: string;
 }
 
-const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
+const RocketAnimation = ({
+  isLaunched,
+  altitude,
+  className,
+}: RocketAnimationProps) => {
   const rocketRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isLaunched && rocketRef.current) {
@@ -15,7 +21,7 @@ const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
       rocket.classList.add("launched");
 
       // Add smoke particles when launched
-      const container = rocket.parentElement;
+      const container = containerRef.current;
       if (container) {
         for (let i = 0; i < 40; i++) {
           const delay = Math.random() * 2;
@@ -32,7 +38,9 @@ const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
           // Remove particles after animation
           setTimeout(
             () => {
-              container.removeChild(particle);
+              if (container.contains(particle)) {
+                container.removeChild(particle);
+              }
             },
             3000 + delay * 1000,
           );
@@ -41,71 +49,95 @@ const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
     }
   }, [isLaunched]);
 
+  // Calculate vertical position based on altitude
+  const calculateRocketPosition = () => {
+    if (!isLaunched) return 0;
+
+    // Keep rocket partially visible until it reaches higher altitudes
+    if (altitude < 100) {
+      return Math.min(altitude * 4, 300);
+    } else {
+      // After 100km, rocket moves up more slowly and eventually out of view
+      return 300 + Math.min((altitude - 100) * 0.5, 200);
+    }
+  };
+
+  const rocketPosition = calculateRocketPosition();
+
+  // Calculate stars visibility based on altitude
+  const starsOpacity = Math.min(altitude / 150, 1);
+
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "relative h-96 w-full flex items-center justify-center",
+        "relative h-96 w-full flex items-center justify-center overflow-hidden",
         className,
       )}
     >
       <div
+        className="absolute inset-0 z-0 transition-opacity duration-1000"
+        style={{
+          backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)`,
+          backgroundSize: "50px 50px",
+          opacity: starsOpacity,
+        }}
+      />
+
+      {altitude > 50 && (
+        <div
+          className="absolute bottom-0 left-0 right-0 h-40 rounded-t-full transition-opacity duration-1000"
+          style={{
+            background:
+              "radial-gradient(ellipse at center bottom, #4299e1 0%, #3182ce 50%, #2c5282 100%)",
+            opacity: Math.min((altitude - 50) / 100, 0.8),
+          }}
+        />
+      )}
+
+      <div
         ref={rocketRef}
         className={cn(
           "relative w-28 h-96 transition-all duration-1000 ease-in transform translate-y-0",
-          isLaunched &&
-            "translate-y-[-400px] transition-all duration-3000 ease-in",
+          isLaunched && "transition-all duration-3000 ease-in",
         )}
         style={{
+          transform: `translateY(-${rocketPosition}px)`,
           transitionProperty: "transform, opacity",
           transitionDuration: isLaunched ? "3s" : "0.5s",
           transitionTimingFunction: "cubic-bezier(0.3, 0.7, 0.4, 1.5)",
         }}
       >
-        {/* Apollo 11 Command Module */}
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-16 bg-white rounded-t-full border-2 border-gray-300 overflow-hidden">
-          {/* Escape Tower */}
           <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-2 h-10 bg-red-700"></div>
           <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-red-700"></div>
-
-          {/* CM Details */}
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-8 h-2 bg-black rounded-full"></div>
         </div>
 
-        {/* Service Module */}
         <div className="absolute top-16 left-1/2 transform -translate-x-1/2 w-14 h-20 bg-gray-200 border-2 border-gray-300">
-          {/* SM Details */}
           <div className="absolute top-2 left-0 w-full h-1 bg-blue-900"></div>
           <div className="absolute top-6 left-0 w-full h-1 bg-blue-900"></div>
           <div className="absolute top-10 left-0 w-full h-1 bg-blue-900"></div>
           <div className="absolute top-14 left-0 w-full h-1 bg-blue-900"></div>
-
-          {/* Solar panels (simplified) */}
           <div className="absolute top-8 -left-2 w-4 h-10 bg-blue-400 border border-gray-500"></div>
           <div className="absolute top-8 -right-2 w-4 h-10 bg-blue-400 border border-gray-500"></div>
         </div>
 
-        {/* Saturn V Third Stage */}
         <div className="absolute top-36 left-1/2 transform -translate-x-1/2 w-20 h-36 bg-white border-2 border-gray-300 flex flex-col justify-between">
-          {/* Stripes and details */}
           <div className="w-full h-4 bg-red-600 flex items-center justify-center">
             <span className="text-[8px] font-bold text-white">USA</span>
           </div>
-
           <div className="w-full h-full flex flex-col justify-center items-center">
             <div className="text-xs font-bold">APOLLO</div>
             <div className="text-xs font-bold">11</div>
           </div>
-
           <div className="w-full h-4 bg-red-600"></div>
         </div>
 
-        {/* Saturn V Second Stage */}
         <div className="absolute top-72 left-1/2 transform -translate-x-1/2 w-24 h-16 bg-white border-2 border-gray-300"></div>
 
-        {/* Saturn V First Stage base */}
         <div className="absolute top-88 left-1/2 transform -translate-x-1/2 w-28 h-8 bg-white border-2 border-gray-300 rounded-b-lg"></div>
 
-        {/* Engine Nozzles */}
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex">
           <div className="w-4 h-6 mx-0.5 rounded-b-full bg-gray-700"></div>
           <div className="w-4 h-6 mx-0.5 rounded-b-full bg-gray-700"></div>
@@ -114,7 +146,6 @@ const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
           <div className="w-4 h-6 mx-0.5 rounded-b-full bg-gray-700"></div>
         </div>
 
-        {/* Rocket Flame - only visible when launching */}
         <div
           className={cn(
             "absolute -bottom-20 left-1/2 transform -translate-x-1/2 w-20 opacity-0 transition-opacity",
@@ -126,34 +157,35 @@ const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
         </div>
       </div>
 
-      {/* Launch Platform */}
-      <div className="absolute bottom-0 w-48 h-6 bg-gray-700 rounded"></div>
-      <div className="absolute bottom-6 w-36 h-24 bg-gray-800 rounded-t-lg"></div>
+      <div
+        className="absolute bottom-0 w-full transition-opacity duration-1000"
+        style={{ opacity: Math.max(1 - altitude / 50, 0) }}
+      >
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-48 h-6 bg-gray-700 rounded"></div>
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-36 h-24 bg-gray-800 rounded-t-lg"></div>
 
-      {/* Launch Tower */}
-      <div className="absolute -right-4 bottom-0 w-6 h-80 bg-gray-700 flex flex-col justify-between items-center">
-        <div className="w-12 h-2 bg-red-500"></div>
-        <div className="w-16 h-1 bg-gray-500 -ml-10"></div>
-        <div className="w-16 h-1 bg-gray-500 -ml-10"></div>
-        <div className="w-16 h-1 bg-gray-500 -ml-10"></div>
-        <div className="w-full h-4 bg-gray-600"></div>
+        <div className="absolute bottom-0 left-[60%] w-6 h-80 bg-gray-700 flex flex-col justify-between items-center">
+          <div className="w-12 h-2 bg-red-500"></div>
+          <div className="w-16 h-1 bg-gray-500 -ml-10"></div>
+          <div className="w-16 h-1 bg-gray-500 -ml-10"></div>
+          <div className="w-16 h-1 bg-gray-500 -ml-10"></div>
+          <div className="w-full h-4 bg-gray-600"></div>
+        </div>
+
+        <div
+          className={cn(
+            "absolute bottom-12 left-[42%] w-3 h-3 rounded-full bg-red-500",
+            isLaunched ? "bg-green-500" : "animate-pulse",
+          )}
+        ></div>
+        <div
+          className={cn(
+            "absolute bottom-12 left-[54%] w-3 h-3 rounded-full bg-red-500",
+            isLaunched ? "bg-green-500" : "animate-pulse",
+          )}
+        ></div>
       </div>
 
-      {/* Launch Pad Lights */}
-      <div
-        className={cn(
-          "absolute bottom-12 left-1/4 w-3 h-3 rounded-full bg-red-500",
-          isLaunched ? "bg-green-500" : "animate-pulse",
-        )}
-      ></div>
-      <div
-        className={cn(
-          "absolute bottom-12 right-1/4 w-3 h-3 rounded-full bg-red-500",
-          isLaunched ? "bg-green-500" : "animate-pulse",
-        )}
-      ></div>
-
-      {/* Add a global style for the smoke animation */}
       <style jsx global>{`
         @keyframes smoke {
           0% {
@@ -176,8 +208,7 @@ const RocketAnimation = ({ isLaunched, className }: RocketAnimationProps) => {
         }
 
         .launched {
-          transform: translateY(-400px);
-          opacity: 0.7;
+          opacity: 0.9;
         }
       `}</style>
     </div>
