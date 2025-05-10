@@ -1,8 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import Icon from '@/components/ui/icon';
+import Icon from "@/components/ui/icon";
 
 interface LaunchButtonProps {
   onLaunch: () => void;
@@ -11,22 +10,22 @@ interface LaunchButtonProps {
   className?: string;
 }
 
-const LaunchButton = ({ 
-  onLaunch, 
-  isLaunched, 
+const LaunchButton = ({
+  onLaunch,
+  isLaunched,
   isCountingDown,
-  className 
+  className,
 }: LaunchButtonProps) => {
   const [isConfirming, setIsConfirming] = useState(false);
 
   const handleClick = () => {
     if (isLaunched || isCountingDown) return;
-    
+
     if (!isConfirming) {
       setIsConfirming(true);
       return;
     }
-    
+
     setIsConfirming(false);
     onLaunch();
   };
@@ -45,11 +44,14 @@ const LaunchButton = ({
       size="lg"
       className={cn(
         "relative overflow-hidden font-bold tracking-wider text-lg min-w-64 h-16 transition-all duration-500",
-        isLaunched ? "bg-green-600 hover:bg-green-700" : 
-        isCountingDown ? "bg-amber-600 hover:bg-amber-700 animate-pulse" : 
-        isConfirming ? "bg-red-600 hover:bg-red-700" : 
-        "bg-blue-600 hover:bg-blue-700",
-        className
+        isLaunched
+          ? "bg-green-600 hover:bg-green-700"
+          : isCountingDown
+            ? "bg-amber-600 hover:bg-amber-700 animate-pulse"
+            : isConfirming
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-blue-600 hover:bg-blue-700",
+        className,
       )}
     >
       <div className="flex items-center justify-center gap-2">
@@ -61,11 +63,11 @@ const LaunchButton = ({
         {getButtonText()}
       </div>
       {isConfirming && (
-        <div 
+        <div
           className="absolute bottom-0 left-0 h-1 bg-white animate-[shrink_5s_linear]"
           style={{
-            width: '100%',
-            animation: 'shrink 3s linear forwards'
+            width: "100%",
+            animation: "shrink 3s linear forwards",
           }}
           onAnimationEnd={() => setIsConfirming(false)}
         />

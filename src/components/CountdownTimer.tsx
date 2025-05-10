@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface CountdownTimerProps {
@@ -9,11 +8,11 @@ interface CountdownTimerProps {
   className?: string;
 }
 
-const CountdownTimer = ({ 
-  seconds: initialSeconds, 
-  isActive, 
+const CountdownTimer = ({
+  seconds: initialSeconds,
+  isActive,
   onComplete,
-  className 
+  className,
 }: CountdownTimerProps) => {
   const [seconds, setSeconds] = useState(initialSeconds);
   const [timerActive, setTimerActive] = useState(false);
@@ -30,10 +29,10 @@ const CountdownTimer = ({
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-    
+
     if (timerActive) {
       interval = setInterval(() => {
-        setSeconds(prevSeconds => {
+        setSeconds((prevSeconds) => {
           if (prevSeconds <= 1) {
             clearInterval(interval!);
             setTimerActive(false);
@@ -46,7 +45,7 @@ const CountdownTimer = ({
     } else if (interval) {
       clearInterval(interval);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -56,8 +55,8 @@ const CountdownTimer = ({
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const remainingSeconds = time % 60;
-    
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   // Calculate arc path for countdown circle
@@ -66,10 +65,10 @@ const CountdownTimer = ({
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference * (1 - percentage);
-    
+
     return {
       strokeDasharray: `${circumference} ${circumference}`,
-      strokeDashoffset
+      strokeDashoffset,
     };
   };
 
@@ -78,7 +77,10 @@ const CountdownTimer = ({
   return (
     <div className={cn("relative flex flex-col items-center", className)}>
       <div className="relative w-40 h-40 flex items-center justify-center">
-        <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 100 100">
+        <svg
+          className="absolute w-full h-full -rotate-90"
+          viewBox="0 0 100 100"
+        >
           {/* Background circle */}
           <circle
             cx="50"
@@ -100,11 +102,13 @@ const CountdownTimer = ({
             className="transition-all duration-1000"
           />
         </svg>
-        <div className={cn(
-          "text-4xl font-mono font-bold z-10",
-          seconds <= 10 ? "text-red-500" : "text-blue-500",
-          timerActive && "animate-pulse"
-        )}>
+        <div
+          className={cn(
+            "text-4xl font-mono font-bold z-10",
+            seconds <= 10 ? "text-red-500" : "text-blue-500",
+            timerActive && "animate-pulse",
+          )}
+        >
           {seconds}
         </div>
       </div>
@@ -112,10 +116,12 @@ const CountdownTimer = ({
         <p className="text-xl font-semibold">
           {timerActive ? "Обратный отсчет" : "Готовность к запуску"}
         </p>
-        <p className={cn(
-          "text-sm font-mono mt-1",
-          seconds <= 10 ? "text-red-500" : "text-gray-500"
-        )}>
+        <p
+          className={cn(
+            "text-sm font-mono mt-1",
+            seconds <= 10 ? "text-red-500" : "text-gray-500",
+          )}
+        >
           {formatTime(seconds)}
         </p>
       </div>
